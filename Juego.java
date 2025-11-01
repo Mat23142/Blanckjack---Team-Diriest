@@ -126,8 +126,12 @@ public class Juego {
      */
     public static class Jugador extends Participante {
         // TODO SPRINT 3: Añadir 'private int saldo;'
-        public Jugador() { super(); }
+        privat int saldo;
+        public Jugador() { super(); this.saldo = 1000; } // Saldo inicial ejemplo
         // TODO SPRINT 3: Añadir métodos para gestionar saldo
+        public int getSaldo() { return saldo; }
+        public void ajustarSaldo(int delta) { this.saldo += delta; }
+        public boolean puedeApostar(int monto) { return monto > 0 && monto <= saldo; }
     }
 
     /**
@@ -204,9 +208,26 @@ public class Juego {
         jugador.limpiarMano();
         crupier.limpiarMano();
         apuestasActivas.clear();
+        apuestaPrincipal = 0;
 
         // TODO SPRINT 3: Pedir apuesta principal
-
+        System.out.println("Tu saldo actual es: " + jugador.getSaldo());
+        while (true) {
+            System.out.println("Ingresa tu apuesta principal:");
+            String linea = scanner.nextLine();
+            try{
+                int monto = Integer.parseInt(linea.trim());
+                if (!jugador.puedeApostar(monto)){
+                    System.out.println("Apuesta inválida. Intenta de nuevo.");
+                    continue;
+                }
+                apuestaPrincipal = monto;
+                jugador.ajustarSaldo(-monto);
+                break;
+            } catch (NumberFormatException e){
+                System.out.println("Entrada inválida. Ingresa un número.");
+            }
+        }
         // Reparto inicial
         jugador.recibirCarta(baraja.repartirCarta());
         crupier.recibirCarta(baraja.repartirCarta());
