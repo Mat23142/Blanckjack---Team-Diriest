@@ -277,8 +277,34 @@ public class Juego {
     private void determinarGanador() {
         System.out.println("Mano final Jugador: " + jugador.getMano());
         System.out.println("Mano final Crupier: " + crupier.getMano());
-
+        int valorJugador = jugador.getValorMano();
+        int valorCrupier = crupier.getValorMano();
         // TODO SPRINT 3: Implementar lógica de comparación y pagos (1:1 o 3:2) [cite: 75, 79]
+        if (jugador.sePaso()) {
+            System.out.println("Crupier gana.");
+        } else if (crupier.sePaso()) {
+            System.out.println("¡Jugador gana!");
+            jugador.ajustarSaldo(apuestaPrincipal * 2); // Pagar al jugador
+        } else if (jugador.getMano().esBlackjack()) {
+            if (crupier.getMano().esBlackjack()) {
+                System.out.println("Empate con Blackjack.");
+                // Devolver apuesta al jugador
+            } else {
+                System.out.println("¡Jugador gana con Blackjack!");
+                jugador.ajustarSaldo((int)(apuestaPrincipal * 2.5)); // Pagar 3:2
+            }
+        } else { 
+            if (valorJugador > valorCrupier) {
+                System.out.println("¡Jugador gana!");
+                jugador.ajustarSaldo(apuestaPrincipal * 2); // Pagar al jugador
+            } else if (valorJugador == valorCrupier) {
+                System.out.println("Empate.");
+                jugador.ajustarSaldo(apuestaPrincipal); // Devolver apuesta 
+            } else {
+                System.out.println("Jugador pierde.");
+            }
+        }
+        System.out.println("Saldo actual del Jugador: " + jugador.getSaldo());
         // TODO SPRINT 4: Evaluar y pagar apuestas especiales
         for (Apuesta apuesta : apuestasActivas) {
             // if (apuesta.evaluar(...)) { ... pagar ... }
