@@ -15,7 +15,8 @@ public class Juego {
     private Crupier crupier;
     private Scanner scanner;
     private List<Apuesta> apuestasActivas; // Para Sprint 4
-
+    private int apuestaPrincipal; // Para Sprint 3
+    }
     // --- SPRINT 1: ENUMS Y CLASES DE DOMINIO FUNDAMENTALES (ANIDADAS) ---
 
     /**
