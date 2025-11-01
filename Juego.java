@@ -241,7 +241,101 @@ public class Juego {
         // if (crupier.getCartaVisible().getRango() == Rango.AS) { ... ofrecer seguro ... }
         // ... pedir apuesta 21+3 ...
         // ... pedir apuesta Pares Perfectos ...
+        //Ofrecer seguro
+        if (crupier.getCartaVisible().getRango() == Rango.AS) {
+            System.out.println("¿Deseas hacer una apuesta de seguro? (s/n)");
+            String respuesta = scanner.nextLine();
+            if (respuesta.equalsIgnoreCase("s")) {
+                ApuestaSeguro apuestaSeguro = new ApuestaSeguro();
+                while (true) {
+                    System.out.println("Ingresa el monto para la apuesta de seguro (máximo " + (apuestaPrincipal / 2) + "):");
+                    String linea = scanner.nextLine();
+                    try {
+                        int montoSeguro = Integer.parseInt(linea.trim());
+                        if (montoSeguro > (apuestaPrincipal / 2) || !jugador.puedeApostar(montoSeguro)) {
+                            System.out.println("Apuesta inválida. Intenta de nuevo.");
+                            continue;
+                        }
+                        apuestaSeguro.setMonto(montoSeguro);
+                        jugador.ajustarSaldo(-montoSeguro);
+                        apuestasActivas.add(apuestaSeguro);
+                        break;
+                    } catch (NumberFormatException e) {
+                        System.out.println("Entrada inválida. Ingresa un número.");
+                    }
+                }
+            }
+            System.out.println("Deseas apostar a Pares Perfectos? (s/n)");
+            String lineaPares = scanner.nextLine().trim();
+            try {
+                int montoPares = Integer.parseInt(lineaPares);
+                if (montoPares > 0 && jugador.puedeApostar(montoPares)) {
+                    ApuestaParesPerfectos apuestaPares = new ApuestaParesPerfectos(){
+                    private int monto;
+                    @Override
+                    public boolean evaluar(Mano manoJugador, Carta cartaVisibleCrupier, Mano manoCrupierCompleta) {
+                        List<Carta> cartas = manoJugador.getCartas();
+                        if (cartas.size() < 2) return false;
+                        return cartas.get(0).getRango() == cartas.get(1).getRango() &&
+                               cartas.get(0).getPalo() == cartas.get(1).getPalo();
+                    }
+                    @Override public int calcularPago() { return monto * 25; /* Pago 25:1 */ }
+                    @Override public void setMonto(int monto) { this.monto = monto; }
+                    @Override public int getMonto() { return monto; }
+                };
+                    apuestaPares.setMonto(montoPares);
+                    jugador.ajustarSaldo(-montoPares);
+                    apuestasActivas.add(apuestaPares);
+                    System.out.println("Apuesta a Pares Perfectos realizada por: " + montoPares);
+                } else if (montoPares > 0) {
+                    System.out.println("Apuesta inválida. No se realizó la apuesta a Pares Perfectos.");
+                }
+            } catch (NumberFormatException ignired) {
+                System.out.println("No se realizó la apuesta a Pares Perfectos.");
+        }
 
+        System.out.println("¿Deseas apostar a 21+3? (s/n)");
+        String linea21mas3 = scanner.nextLine().trim();
+        try {
+            int monto21mas3 = Integer.parseInt(linea21mas3);
+            if (monto21mas3 > 0 && jugador.puedeApostar(monto21mas3)) {
+                Apuesta21mas3 apuesta21mas3 = new Apuesta21mas3(){
+                private int monto;
+                @Override
+                public void setMonto(int monto) { this.monto = monto; }
+                @Override   public int getMonto() { return monto; }
+                @Override
+                public boolean evaluar(Mano manoJugador, Carta cartaVisibleCrupier, Mano manoCrupierCompleta) {
+                    List<Carta> cartas = manoJugador.getCartas();
+                    if (cartas.size() < 2) return false;
+                    Carta cartaCrupier = cartaVisibleCrupier;
+                    Rango r1 = cartas.get(0).getRango();
+                    Rango r2 = cartas.get(1).getRango();
+                    Rango r3 = cartaCrupier.getRango();
+                    // Verificar combinaciones
+                    boolean esTrio = (r1 == r2) && (r2 == r3);
+                    boolean esEscalera = (Math.abs(r1.getValor() - r2.getValor()) == 1 &&
+                                          Math.abs(r2.getValor() - r3.getValor()) == 1) ||
+                                         (Math.abs(r1.getValor() - r3.getValor()) == 1 &&
+                                          Math.abs(r3.getValor() - r2.getValor()) == 1) ||
+                                         (Math.abs(r2.getValor() - r1.getValor()) == 1 &&
+                                          Math.abs(r1.getValor() - r3.getValor()) == 1);
+                    boolean esColor = (cartas.get(0).getPalo() == cartas.get(1).getPalo()) &&
+                                      (cartas.get(1).getPalo() == cartaCrupier.getPalo());
+                    return esTrio || esEscalera || esColor;
+                }
+                @Override public int calcularPago() { return monto * 9; /* Pago 9:1 */ }
+            };
+                apuesta21mas3.setMonto(monto21mas3);
+                jugador.ajustarSaldo(-monto21mas3);
+                apuestasActivas.add(apuesta21mas3);
+                System.out.println("Apuesta a 21+3 realizada por: " + monto21mas3);
+            } else if (monto21mas3 > 0) {
+                System.out.println("Apuesta inválida. No se realizó la apuesta a 21+3.");
+            }
+        } catch (NumberFormatException ignired) {
+            System.out.println("No se realizó la apuesta a 21+3.");
+        }
         // Turno del Jugador
         turnoJugador();
 
@@ -307,7 +401,14 @@ public class Juego {
         System.out.println("Saldo actual del Jugador: " + jugador.getSaldo());
         // TODO SPRINT 4: Evaluar y pagar apuestas especiales
         for (Apuesta apuesta : apuestasActivas) {
-            // if (apuesta.evaluar(...)) { ... pagar ... }
+            boolean gano = apuesta.evaluar(jugador.getMano(), crupier.getCartaVisible(), crupier.getMano());
+            if (gano) {
+                int pago = apuesta.calcularPago();
+                System.out.println("¡Apuesta especial gana! Pago: " + pago);
+                jugador.ajustarSaldo(pago);
+            } else {
+                System.out.println("Apuesta especial pierde.");
+            }
         }
     }
 
