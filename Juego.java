@@ -277,7 +277,7 @@ public class Juego {
                         List<Carta> cartas = manoJugador.getCartas();
                         if (cartas.size() < 2) return false;
                         return cartas.get(0).getRango() == cartas.get(1).getRango() &&
-                               cartas.get(0).getPalo() == cartas.get(1).getPalo();
+                            cartas.get(0).getPalo() == cartas.get(1).getPalo();
                     }
                     @Override public int calcularPago() { return monto * 25; /* Pago 25:1 */ }
                     @Override public void setMonto(int monto) { this.monto = monto; }
@@ -315,13 +315,13 @@ public class Juego {
                     // Verificar combinaciones
                     boolean esTrio = (r1 == r2) && (r2 == r3);
                     boolean esEscalera = (Math.abs(r1.getValor() - r2.getValor()) == 1 &&
-                                          Math.abs(r2.getValor() - r3.getValor()) == 1) ||
-                                         (Math.abs(r1.getValor() - r3.getValor()) == 1 &&
-                                          Math.abs(r3.getValor() - r2.getValor()) == 1) ||
-                                         (Math.abs(r2.getValor() - r1.getValor()) == 1 &&
-                                          Math.abs(r1.getValor() - r3.getValor()) == 1);
+                                        Math.abs(r2.getValor() - r3.getValor()) == 1) ||
+                                        (Math.abs(r1.getValor() - r3.getValor()) == 1 &&
+                                        Math.abs(r3.getValor() - r2.getValor()) == 1) ||
+                                        (Math.abs(r2.getValor() - r1.getValor()) == 1 &&
+                                        Math.abs(r1.getValor() - r3.getValor()) == 1);
                     boolean esColor = (cartas.get(0).getPalo() == cartas.get(1).getPalo()) &&
-                                      (cartas.get(1).getPalo() == cartaCrupier.getPalo());
+                                    (cartas.get(1).getPalo() == cartaCrupier.getPalo());
                     return esTrio || esEscalera || esColor;
                 }
                 @Override public int calcularPago() { return monto * 9; /* Pago 9:1 */ }
